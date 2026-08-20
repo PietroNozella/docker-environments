@@ -1,0 +1,58 @@
+# Stack completa: Node + Postgres + Redis
+#
+# O que você vai observar aqui:
+# - 3 serviços orquestrados pelo compose, com ordem de inicialização correta
+#   (depends_on + healthcheck: a app só sobe quando banco E cache estiverem prontos)
+# - comunicação INTERNA pela rede do compose: a app usa "postgres" e "redis"
+#   como host (nomes dos serviços), sem IPs e sem expor portas do banco
+# - postgres e redis sem "ports": ficam INVISÍVEIS para sua máquina
+services:
+  app:
+    build: ./app # constrói a imagem multi-stage do app
+    container_name: stack-app
+    ports:
+      - "3000:3000" # único ponto de entrada da stack
+    environment:
+      # as URLs usam os NOMES DOS SERVIÇOS, resolvidos pelo DNS interno da rede
+      DATABASE_URL: postgres://estudo:estudo123@postgres:5432/stack
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy # só inicia quando o banco responder
+      redis:
+        condition: service_healthy # só inicia quando o redis responder
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: stack-postgres
+    environment:
+      POSTGRES_USER: estudo
+      POSTGRES_PASSWORD: estudo123
+      POSTGRES_DB: stack # banco que a app usa
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U estudo -d stack"]
+      interval: 5s
+      retries: 5
+    # Sem "ports": o banco só é acessível DENTRO da rede do compose.
+    # Para inspecionar de fora, descomente:
+    # ports:
+    #   - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    container_name: stack-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"] # responde PONG quando saudável
+      interval: 5s
+      retries: 5
+    # ports:
+    #   - "6379:6379"
+
+volumes:
+  pgdata:
+  redisdata:

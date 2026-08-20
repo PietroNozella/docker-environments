@@ -1,0 +1,26 @@
+# Conceito: Redes — como containers conversam entre si
+#
+# Cenário: uma "api" (nginx) e um "banco" (postgres) na MESMA rede customizada "app-net".
+# - Na rede app-net, os containers se enxergam pelo NOME DO SERVIÇO (não por IP):
+#   a api acessa o banco em "postgres:5432".
+# - A rede não tem bind do host: o banco NÃO é exposto para sua máquina (mais seguro).
+services:
+  api:
+    image: nginx:alpine
+    container_name: net-api
+    ports:
+      - "8080:80" # único ponto de entrada: só a api é visível de fora
+    networks:
+      - app-net
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: net-postgres
+    environment:
+      POSTGRES_USER: estudo
+      POSTGRES_PASSWORD: estudo123
+    networks:
+      - app-net # sem "ports": banco só acessível DENTRO da rede
+
+networks:
+  app-net: # rede bridge customizada, criada pelo compose

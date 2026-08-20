@@ -1,0 +1,24 @@
+# Ambiente Python em Docker
+#
+# - dev: hot reload com Flask --debug (bind mount do código)
+# - prod: imagem construída pelo Dockerfile, porta 5001
+services:
+  dev:
+    image: python:3.11-slim
+    container_name: py-dev
+    working_dir: /app
+    volumes:
+      - ./:/app # bind mount: código do host roda no container
+    ports:
+      - "5000:5000"
+    # --debug ativa o reload automático do Flask a cada salvamento
+    command: sh -c "pip install --no-cache-dir -r requirements.txt && flask --app app run --debug --host 0.0.0.0"
+
+  prod:
+    build: .
+    container_name: py-prod
+    ports:
+      - "5001:5000"
+
+  # Dica extra: teste a imagem oficial em modo interativo
+  # docker run --rm -it python:3.11-slim python -c "print('oi do python oficial')"

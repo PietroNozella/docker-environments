@@ -1,0 +1,19 @@
+# Conceito: persistência de dados
+# - named volume "pgdata": dados sobrevivem a `docker compose down` (gerenciado pelo Docker)
+# - bind mount "./backup": pasta do host acessível DENTRO do container (compartilhamento real)
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: vol-postgres
+    environment:
+      POSTGRES_USER: estudo
+      POSTGRES_PASSWORD: estudo123
+      POSTGRES_DB: volumes
+    ports:
+      - "5432:5432" # porta do host : porta do container
+    volumes:
+      - pgdata:/var/lib/postgresql/data # named volume: banco persiste entre `down` e `up`
+      - ./backup:/backup # bind mount: pasta local visível em /backup dentro do container
+
+volumes:
+  pgdata: # declaração do named volume (o Docker cria em C:\Users\Micro\AppData\Local\Docker\wsl\...)

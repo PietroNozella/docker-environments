@@ -1,0 +1,23 @@
+# Ambiente: Redis 7 + RedisInsight
+#
+# Redis: banco em memória (cache, filas, sessões). RedisInsight: interface gráfica.
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: redis-estudo
+    command: redis-server --appendonly yes # "appendonly": persiste dados em disco (AOF)
+    ports:
+      - "6379:6379" # porta padrão do Redis
+    volumes:
+      - redisdata:/data # dados do AOF persistidos
+
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: redisinsight-estudo
+    ports:
+      - "5540:5540" # interface em http://localhost:5540
+    depends_on:
+      - redis
+
+volumes:
+  redisdata:

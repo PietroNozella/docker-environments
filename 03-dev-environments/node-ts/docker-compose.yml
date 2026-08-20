@@ -1,0 +1,28 @@
+# Ambiente Node + TypeScript em Docker
+#
+# - dev: hot reload real. O código do host (bind mount) é o código do container;
+#         o volume "node_modules" isola os pacotes instalados no Linux (WSL)
+#         para não conflitar com node_modules do Windows.
+# - prod: constrói a imagem multi-stage e roda a versão otimizada na porta 3001.
+services:
+  dev:
+    image: node:22-alpine # imagem base direta (sem build) — o dev não precisa de build
+    container_name: node-ts-dev
+    working_dir: /app
+    volumes:
+      - ./:/app # bind mount: edite no VS Code, roda no container (hot reload)
+      - node_modules:/app/node_modules # volume anônimo: preserva as deps Linux do container
+    ports:
+      - "3000:3000"
+    command: sh -c "npm install && npm run dev" # npm run dev = tsx watch (recompila e reinicia)
+
+  prod:
+    build:
+      context: .
+      target: runtime # usa só o estágio final do Dockerfile multi-stage
+    container_name: node-ts-prod
+    ports:
+      - "3001:3000"
+
+volumes:
+  node_modules:

@@ -1,0 +1,25 @@
+# Sensíveis / gerados por ambiente
+.env
+*.env
+!.env.example
+
+# Dados de banco e caches (bind mounts dos ambientes de estudo)
+data/
+backup/
+
+# Dependências e builds
+node_modules/
+dist/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Logs
+*.log
+
+# Editor / SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

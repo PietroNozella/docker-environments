@@ -1,0 +1,15 @@
+# Nginx servindo site estático (com Tailwind)
+#
+# Cenário: deploy de um site estático em Docker — como o Vercel faz por baixo.
+# O Nginx é o servidor web: entrega arquivos, aplica cache e compressão.
+services:
+  web:
+    image: nginx:alpine
+    container_name: nginx-static
+    ports:
+      - "8080:80" # o Nginx escuta na 80 (padrão) e o host acessa via 8080
+    volumes:
+      # bind mount do site (read-only: o container não pode alterar seus arquivos)
+      - ./www:/usr/share/nginx/html:ro
+      # configuração customizada substitui a default do Nginx
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro

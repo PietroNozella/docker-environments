@@ -1,0 +1,39 @@
+# Ambiente: Postgres 16 + pgAdmin 4
+#
+# Uso prático: banco de dados isolado da sua máquina, com interface gráfica.
+# Base do seu stack Supabase (que usa Postgres por baixo).
+#
+# ⚠️ Se sua máquina já usa a porta 5432 (instalação local do Postgres), troque
+#    o lado esquerdo: "5433:5432" e use localhost:5433.
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: pg-estudo
+    environment:
+      POSTGRES_USER: estudo          # usuário padrão do banco
+      POSTGRES_PASSWORD: estudo123   # senha (em estudo, fixa; em projeto real, use .env)
+      POSTGRES_DB: meu_banco         # banco criado automaticamente na primeira subida
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data # named volume: dados persistem entre subidas
+    healthcheck:
+      # verifica se o Postgres aceita conexão antes de marcar o serviço como "saudável"
+      test: ["CMD-SHELL", "pg_isready -U estudo -d meu_banco"]
+      interval: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin-estudo
+    environment:
+      PGADMIN_DEFAULT_EMAIL: estudo@local.com  # login da interface web
+      PGADMIN_DEFAULT_PASSWORD: estudo123
+    ports:
+      - "8080:80" # interface em http://localhost:8080
+    depends_on:
+      postgres:
+        condition: service_healthy # só sobe o pgAdmin quando o banco estiver pronto
+
+volumes:
+  pgdata:
