@@ -1,68 +1,89 @@
-# Docker Environments — Estudos
+# Docker Environments
 
-Ambientes Docker prontos para estudo, do básico ao completo. Cada pasta tem o que você
-precisa para subir e aprender um conceito específico, com comentários no código e um
-`README.md` explicando o que está acontecendo.
+Ambientes Docker progressivos para estudar conceitos fundamentais, serviços isolados, desenvolvimento com hot reload e stacks com múltiplos containers.
+
+## Status
+
+Projeto educacional e em evolução. Cada ambiente é independente e possui instruções próprias.
+
+## Pré-requisitos
+
+- Docker;
+- Docker Compose v2.
 
 ## Índice dos ambientes
 
 | Pasta | Conceito principal | Comando |
 |---|---|---|
 | `01-conceitos/hello-world` | Comandos básicos do Docker | `docker run hello-world` |
-| `01-conceitos/volumes` | Persistência: named volume vs bind mount | `docker compose up -d` |
+| `01-conceitos/volumes` | Named volume e bind mount | `docker compose up -d` |
 | `01-conceitos/networks` | DNS interno entre containers | `docker compose up -d` |
-| `02-servicos/postgres` | Banco pronto + pgAdmin (interface web) | `docker compose up -d` |
-| `02-servicos/redis` | Cache em memória + RedisInsight | `docker compose up -d` |
-| `03-dev-environments/node-ts` | Dockerfile multi-stage + hot reload | `docker compose up -d dev` |
-| `03-dev-environments/python` | Python/Flask em Docker + hot reload | `docker compose up -d dev` |
-| `04-stacks/node-postgres` | App + banco + cache orquestrados | `docker compose up -d --build` |
+| `02-servicos/postgres` | PostgreSQL e pgAdmin | `docker compose up -d` |
+| `02-servicos/redis` | Redis e RedisInsight | `docker compose up -d` |
+| `03-dev-environments/node-ts` | Node.js, TypeScript e hot reload | `docker compose up -d dev` |
+| `03-dev-environments/python` | Python, Flask e hot reload | `docker compose up -d dev` |
+| `04-stacks/node-postgres` | Aplicação, banco e cache | `docker compose up -d --build` |
 | `04-stacks/nginx-static` | Nginx servindo site estático | `docker compose up -d` |
 
-## Ordem sugerida de estudo
+## Ordem sugerida
 
-1. **01-conceitos** — entenda imagem vs container, volumes e redes (a fundação).
-2. **02-servicos** — ganho imediato: banco e cache isolados, prontos em 1 comando.
-3. **03-dev-environments** — dockerize seu próprio código mantendo hot reload.
-4. **04-stacks** — junte tudo em uma aplicação multi-serviço.
+1. `01-conceitos`: imagens, containers, volumes e redes.
+2. `02-servicos`: banco e cache isolados.
+3. `03-dev-environments`: ambientes de desenvolvimento reproduzíveis.
+4. `04-stacks`: aplicações com múltiplos serviços.
 
-## Cheat sheet
+## Uso
 
-```bash
-docker compose up -d             # sobe os serviços em background
-docker compose up -d --build     # sobe reconstruindo as imagens (após mudar código/Dockerfile)
-docker compose down              # para e remove os containers (volumes ficam)
-docker compose down -v           # para e remove TAMBÉM os volumes (dados somem!)
-docker compose logs -f <serviço> # logs em tempo real
-docker compose exec <serviço> sh # terminal dentro do container
-docker compose ps                # status dos serviços
-docker ps -a                     # todos os containers da máquina
-docker images                    # imagens baixadas
-docker system prune              # limpa containers/imagens paradas (cuidado: apaga tudo parado)
-```
-
-## Boas práticas adotadas aqui
-
-- **Named volumes** para dados de banco (persistem entre `up`/`down`).
-- **Bind mounts** só para código/arquivos de estudo (com `:ro` quando possível).
-- **Healthchecks** + `depends_on: condition: service_healthy` para ordem de inicialização.
-- **Portas documentadas** em cada README; se algo conflitar com processo local, troque o
-  lado esquerdo do mapeamento (ex: `5433:5432`).
-
-## Regras de ouro do Docker
-
-1. Container é **descartável**: se precisar de algo para preservar, use volume.
-2. **Nunca** configure IPs — use nomes de serviços (DNS interno do compose).
-3. Imagem final deve ser **enxuta**: multi-stage para apps com build.
-4. `localhost` dentro do container é o **próprio container**, não sua máquina.
-5. Segredo (senha/API key) vai em **variável de ambiente**, nunca no código/imagem.
-
-## Ambientes prontos em 1 comando
-
-Para um dia a dia rápido, estes dois são os mais úteis:
+Entre na pasta do ambiente escolhido e execute o comando documentado no README local. Exemplo:
 
 ```bash
-docker compose -f 02-servicos/postgres/docker-compose.yml up -d   # banco + pgAdmin
-docker compose -f 02-servicos/redis/docker-compose.yml up -d      # cache + RedisInsight
+cd 02-servicos/postgres
+docker compose up -d
+docker compose ps
 ```
 
-> Dica: use `-f` com o caminho do compose, ou `cd` até a pasta e rode `docker compose up -d`.
+Para encerrar sem remover os dados persistidos:
+
+```bash
+docker compose down
+```
+
+## Validação
+
+Antes de subir um ambiente, valide o arquivo Compose:
+
+```bash
+docker compose config
+```
+
+Depois de iniciar os serviços:
+
+```bash
+docker compose ps
+docker compose logs
+```
+
+## Comandos úteis
+
+```bash
+docker compose up -d
+docker compose up -d --build
+docker compose down
+docker compose logs -f <serviço>
+docker compose exec <serviço> sh
+docker ps -a
+docker images
+```
+
+`docker compose down -v` remove também os volumes do ambiente e apaga os dados persistidos.
+
+## Boas práticas demonstradas
+
+- named volumes para dados persistentes;
+- bind mounts para código durante desenvolvimento;
+- health checks para controlar dependências;
+- imagens multi-stage quando há etapa de build;
+- comunicação por nomes de serviço, sem IPs fixos;
+- configuração por variáveis de ambiente, sem segredos no código.
+
+
